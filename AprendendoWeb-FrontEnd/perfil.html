@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.3.4"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+</head>
+
+<body>
+    <div id="application">
+        <form class="form-signin">
+            <h2 class="form-signin-heading">Cadastrar de Perfi</h2>
+            <label class="sr-only">Descricao</label>
+            <input type="text" id="input-descricao" v-model="perfil.descricao" placeholder="Descrição">
+            <button class="btn btn-lg btn-primary btn-block" v-on:click="salvar">Salvar</button>
+            <button class="btn btn-lg btn-primary btn-block" v-on:click="listarTodos">ListarTodos</button>
+
+            <br>
+        </form>
+
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Descricao</th>
+                </tr>
+            </thead>
+            <tbody v-for="perfil in perfis">
+                <tr>
+                    <td>{{perfil.id}} </td>
+                    <td>{{perfil.descricao}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+</body>
+
+<script>
+    var app = new Vue({
+        el: '#application',
+        data: {
+            perfil: { id: "", descricao: "" },
+            perfis: [],
+        },
+        
+        created: function () {
+            this.$http.get("http://localhost:8081/perfilcontroller/").then(function (response) {
+                this.perfis = response.body;
+            }, function (response) {
+                console.log("nao funcionou");
+            })
+        },
+
+        methods: {
+            salvar: function () {
+                this.$http.post("http://localhost:8081/perfilcontroller/", this.perfil).then(function (response) {
+                    this.perfis.push(response.body);
+                }, function (response) {
+                    console.log("nao funcionou");
+                })
+            },
+
+            listarTodos: function () {
+                this.$http.get("http://localhost:8081/perfilcontroller/").then(function (response) {
+                    this.perfis = response.body;
+                }, function (response) {
+                    console.log("nao funcionou");
+                })
+            },
+
+            alterar: function (perfilAlterar) {
+                this.perfilAlterar = perfilAlterar;
+                this.perfil = Vue.util.extend({}, perfilAlterar);
+            },
+            
+            excluir: function (perfilExcluir) {
+                if (window.confirm("Tem Certeza que deseja remover o usuário " + perfilExcluir.descricao)) {
+                    this.$http.delete("http://localhost:8081/usucontroller/" + perfilExcluir.id).then(function (response) {
+                        //Remover do Vetor
+                        indice = this.perfis.indexOf(perfilExcluir);
+                        this.perfis.splice(indice, 1);
+                    }, function (response) {
+                        console.log("nao funcionou");
+
+                    })
+                }
+            },
+
+            novo: function () {
+                this.usuario = { id: "", descricao: "" };
+            }
+        }
+    });
+
+</script>
+
+</html>
